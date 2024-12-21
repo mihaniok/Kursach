@@ -112,3 +112,39 @@ class DBHandler:
             with conn.cursor() as cur:
                 cur.execute("SELECT group_name FROM groups_list ORDER BY group_name;")
                 return [row[0] for row in cur.fetchall()]
+
+    def add_student(self, name, group):
+        """
+        Добавляет студента в указанную группу.
+        """
+        table_name = "group_" + group
+        insert_student = sql.SQL("INSERT INTO {table} (username, display_name) VALUES (%s, %s) RETURNING id;").format(
+            table=sql.Identifier(table_name)
+        )
+        display_name = name  # В данном случае display_name = name, можно изменить по необходимости
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(insert_student, (name, display_name))
+                new_id = cur.fetchone()[0]
+                conn.commit()
+                return new_id
+
+    def get_student_by_id(self, student_id):
+        """
+        Получает студента по ID. Предполагается, что ID уникален по всем группам.
+        """
+        # Нужно перебрать все группы и найти студента с данным ID
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT group_name FROM groups_list;")
+                groups = [row[0] for row in cur.fetchall()]
+                for group in groups:
+                    table_name = "group_" + group
+                    query = sql.SQL("SELECT id, username, display_name, %s FROM {table} WHERE id = %s;").format(
+                        table=sql.Identifier(table_name)
+                    )
+                    cur.execute(query, (group, student_id))
+                    student = cur.fetchone()
+                    if student:
+                        return student  # (id, username, display_name, group_name)
+        return None

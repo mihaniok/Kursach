@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf import CSRFProtect
 from db_handler import DBHandler
 from werkzeug.security import generate_password_hash, check_password_hash
+from forms import RegistrationForm, LoginForm  # Импортируем формы
 import os
 
 app = Flask(__name__)
@@ -44,16 +45,12 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Маршрут для регистрации нового пользователя."""
-    if request.method == 'POST':
-        username = request.form.get('username').strip()
-        password = request.form.get('password').strip()
-        display_name = request.form.get('display_name').strip()
-        group_name = request.form.get('group_name').strip()
-
-        # Проверка заполнения всех полей
-        if not username or not password or not display_name or not group_name:
-            flash("Заполните все поля.")
-            return redirect(url_for('register'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        password = form.password.data.strip()
+        display_name = form.display_name.data.strip()
+        group_name = form.group_name.data.strip()
 
         # Проверка существования пользователя
         if db.user_exists(username):
@@ -77,14 +74,15 @@ def register():
         session['username'] = username
         flash("Регистрация прошла успешно!")
         return redirect(url_for('my_group'))
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Маршрут для входа пользователя."""
-    if request.method == 'POST':
-        username = request.form.get('username').strip()
-        password = request.form.get('password').strip()
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        password = form.password.data.strip()
 
         # Получение пользователя из БД
         user = db.get_user(username)
@@ -102,7 +100,7 @@ def login():
         else:
             flash("Неверный пароль.")
             return redirect(url_for('login'))
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required

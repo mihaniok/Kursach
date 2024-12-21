@@ -5,20 +5,24 @@
 {% block content %}
 <h2>Регистрация</h2>
 <form method="POST">
-    {{ csrf_token() }}
-    <label>Логин:
-        <input type="text" name="username" required>
-    </label>
-    <label>Пароль:
-        <input type="password" name="password" required>
-    </label>
-    <label>Отображаемое имя:
-        <input type="text" name="display_name" required>
-    </label>
-    <label>Группа:
-        <input type="text" name="group_name" required>
-    </label>
-    <button type="submit">Зарегистрироваться</button>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(size=32) }}
+    </p>
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(size=32) }}
+    </p>
+    <p>
+        {{ form.display_name.label }}<br>
+        {{ form.display_name(size=32) }}
+    </p>
+    <p>
+        {{ form.group_name.label }}<br>
+        {{ form.group_name(size=32) }}
+    </p>
+    <p>{{ form.submit() }}</p>
 </form>
 <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
 {% endblock %}
