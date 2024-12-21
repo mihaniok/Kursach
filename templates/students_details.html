@@ -1,0 +1,9 @@
+<!-- templates/student_details.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Студент: {{ student[1] }}</h2>
+<p><strong>ID:</strong> {{ student[0] }}</p>
+<p><strong>Группа:</strong> {{ student[3] }}</p>
+{% endblock %}

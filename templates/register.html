@@ -1,0 +1,24 @@
+<!-- templates/register.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Регистрация</h2>
+<form method="POST">
+    {{ csrf_token() }}
+    <label>Логин:
+        <input type="text" name="username" required>
+    </label>
+    <label>Пароль:
+        <input type="password" name="password" required>
+    </label>
+    <label>Отображаемое имя:
+        <input type="text" name="display_name" required>
+    </label>
+    <label>Группа:
+        <input type="text" name="group_name" required>
+    </label>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+<p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+{% endblock %}

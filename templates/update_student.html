@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Обновить данные студента №{{ student[0] }}</h2>
+<form method="POST">
+    <label>Новое имя (оставьте пустым, если не нужно менять):
+        <input type="text" name="name" value="{{ student[1] }}">
+    </label>
+    <label>Новая группа (оставьте пустым, если не нужно менять):
+        <input type="text" name="group" value="{{ student[2] }}">
+    </label>
+    <button type="submit">Обновить</button>
+</form>
+{% endblock %}

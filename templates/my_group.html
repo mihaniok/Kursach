@@ -1,0 +1,70 @@
+<!-- templates/my_group.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Моя группа: {{ group_name }}</h2>
+
+<h3>Участники группы</h3>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Логин</th>
+            <th>Имя</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for member in members %}
+        <tr>
+            <td>{{ member[0] }}</td>
+            <td>{{ member[1] }}</td>
+            <td>{{ member[2] }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Поиск студента по ID</h3>
+<form id="searchForm">
+    <label>ID студента:
+        <input type="number" id="searchId" required>
+    </label>
+    <button type="submit">Найти</button>
+</form>
+<div id="searchResult"></div>
+
+<script>
+// Обработчик формы поиска студента
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const studentId = document.getElementById('searchId').value.trim();
+
+    if (!studentId) {
+        alert("Пожалуйста, введите ID студента.");
+        return;
+    }
+
+    fetch(`/student/${studentId}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('searchResult');
+        if (data.success) {
+            const student = data.student;
+            resultDiv.innerHTML = `<p>ID: ${student.id}, Имя: ${student.display_name}, Группа: ${student.group_name}</p>`;
+        } else {
+            resultDiv.innerHTML = `<p>${data.message}</p>`;
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+</script>
+{% endblock %}

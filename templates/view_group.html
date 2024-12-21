@@ -1,0 +1,27 @@
+<!-- templates/view_group.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Группа: {{ group_name }}</h2>
+
+<h3>Участники группы</h3>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Логин</th>
+            <th>Имя</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for member in members %}
+        <tr>
+            <td>{{ member[0] }}</td>
+            <td>{{ member[1] }}</td>
+            <td>{{ member[2] }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

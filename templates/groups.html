@@ -1,0 +1,43 @@
+<!-- templates/groups.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Все группы</h2>
+<button id="loadGroups">Загрузить группы</button>
+<ul id="groupsList">
+    <!-- Список групп будет загружаться здесь -->
+</ul>
+
+<script>
+document.getElementById('loadGroups').addEventListener('click', function() {
+    fetch('{{ url_for("groups") }}', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const groupsList = document.getElementById('groupsList');
+        groupsList.innerHTML = ''; // Очистка списка
+
+        if (data.success && data.groups.length > 0) {
+            data.groups.forEach(group => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `/group/${group}`;
+                a.textContent = group;
+                li.appendChild(a);
+                groupsList.appendChild(li);
+            });
+        } else {
+            groupsList.innerHTML = '<li>Групп пока нет.</li>';
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+</script>
+{% endblock %}
