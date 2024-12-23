@@ -1,51 +1,19 @@
-<!-- templates/update_student.html -->
+<!-- templates/student_details.html -->
 
 {% extends "base.html" %}
 
 {% block content %}
-<div class="form-container">
-    <h2>Обновление данных студента</h2>
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.display_name.label }}
-            {{ form.display_name(class="form-input") }}
-            {% for error in form.display_name.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.phone.label }}
-            {{ form.phone(class="form-input") }}
-            {% for error in form.phone.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.city.label }}
-            {{ form.city(class="form-input") }}
-            {% for error in form.city.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.date_of_birth.label }}
-            {{ form.date_of_birth(class="form-input") }}
-            {% for error in form.date_of_birth.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.admission_year.label }}
-            {{ form.admission_year(class="form-input") }}
-            {% for error in form.admission_year.errors %}
-                <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.submit(class="form-button") }}
-        </div>
-    </form>
-    <a href="{{ url_for('student_details', student_id=student[0]) }}" class="back-button">Вернуться к деталям студента</a>
+<div class="student-details-container">
+    <h2>Детали студента</h2>
+    <div class="details">
+        <p><strong>ID:</strong> {{ student[0] }}</p>
+        <p><strong>Имя:</strong> {{ student[2] }}</p> <!-- display_name -->
+        <p><strong>Номер телефона:</strong> {{ student[3] if student[3] else 'Не указано' }}</p>
+        <p><strong>Город:</strong> {{ student[4] if student[4] else 'Не указано' }}</p>
+        <p><strong>Дата рождения:</strong> {{ student[5].strftime('%Y-%m-%d') if student[5] else 'Не указано' }}</p>
+        <p><strong>Год поступления:</strong> {{ student[6] if student[6] else 'Не указано' }}</p>
+    </div>
+    <p><a href="{{ url_for('update_student', student_id=student[0]) }}">Обновить</a></p>
+    <a href="{{ url_for('my_group') }}" class="back-button">Вернуться к группе</a>
 </div>
 {% endblock %}

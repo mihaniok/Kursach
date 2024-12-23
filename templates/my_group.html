@@ -22,11 +22,11 @@
         {% for member in members %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td><a href="{{ url_for('student_details', student_id=member[0]) }}">{{ member[2] }}</a></td>
-                <td>{{ member[3] }}</td>
-                <td>{{ member[4] }}</td>
-                <td>{{ member[5].strftime('%Y-%m-%d') if member[5] else 'Не указано' }}</td>
-                <td>{{ member[6] if member[6] else 'Не указано' }}</td>
+                <td><a href="{{ url_for('student_details', student_id=member[0]) }}">{{ member[2] }}</a></td> <!-- display_name -->
+                <td>{{ member[3] if member[3] else 'Не указано' }}</td> <!-- phone -->
+                <td>{{ member[4] if member[4] else 'Не указано' }}</td> <!-- city -->
+                <td>{{ member[5].strftime('%Y-%m-%d') if member[5] else 'Не указано' }}</td> <!-- date_of_birth -->
+                <td>{{ member[6] if member[6] else 'Не указано' }}</td> <!-- admission_year -->
             </tr>
         {% endfor %}
         </tbody>
@@ -42,7 +42,6 @@
 </div>
 
 <script>
-// Обработчик формы поиска студента
 document.getElementById('searchForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
