@@ -24,7 +24,13 @@ class DBHandler:
                     username VARCHAR(100) UNIQUE NOT NULL,
                     password_hash VARCHAR(255) NOT NULL,
                     display_name VARCHAR(100) NOT NULL,
-                    group_name VARCHAR(100) NOT NULL
+                    group_name VARCHAR(100) NOT NULL,
+                    email VARCHAR(255),
+                    phone VARCHAR(20),
+                    city VARCHAR(100),
+                    date_of_birth DATE,
+                    admission_year INTEGER,
+                    date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 """)
 
@@ -43,20 +49,24 @@ class DBHandler:
                 cur.execute(query, (username,))
                 return cur.fetchone() is not None
 
-    def create_user(self, username, password_hash, display_name, group_name):
+    def create_user(self, username, password_hash, display_name, group_name, email=None, phone=None, city=None, date_of_birth=None, admission_year=None):
         insert_user = """
-        INSERT INTO users (username, password_hash, display_name, group_name)
-        VALUES (%s, %s, %s, %s) RETURNING id;
+        INSERT INTO users (username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
         """
         with self.connect() as conn:
             with conn.cursor() as cur:
-                cur.execute(insert_user, (username, password_hash, display_name, group_name))
+                cur.execute(insert_user, (username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year))
                 user_id = cur.fetchone()[0]
                 conn.commit()
                 return user_id
 
     def get_user(self, username):
-        query = "SELECT id, username, password_hash, display_name, group_name FROM users WHERE username = %s;"
+        query = """
+            SELECT id, username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year, date_joined 
+            FROM users 
+            WHERE username = %s;
+        """
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(query, (username,))
@@ -74,34 +84,41 @@ class DBHandler:
             with conn.cursor() as cur:
                 # Добавляем группу в список групп
                 cur.execute("INSERT INTO groups_list (group_name) VALUES (%s) ON CONFLICT DO NOTHING;", (group_name,))
-                # Создаем таблицу для группы
+                # Создаем таблицу для группы с дополнительными полями
                 create_group_table = sql.SQL("""
                 CREATE TABLE IF NOT EXISTS {table} (
                     id SERIAL PRIMARY KEY,
                     username VARCHAR(100) NOT NULL,
-                    display_name VARCHAR(100) NOT NULL
+                    display_name VARCHAR(100) NOT NULL,
+                    phone VARCHAR(20),
+                    city VARCHAR(100),
+                    date_of_birth DATE,
+                    admission_year INTEGER
                 );
                 """).format(table=sql.Identifier("group_" + group_name))
                 cur.execute(create_group_table)
                 conn.commit()
 
-    def add_user_to_group(self, username, display_name, group_name):
+    def add_user_to_group(self, username, display_name, group_name, phone=None, city=None, date_of_birth=None, admission_year=None):
         table_name = "group_" + group_name
-        insert_member = sql.SQL("INSERT INTO {table} (username, display_name) VALUES (%s, %s);").format(
-            table=sql.Identifier(table_name)
-        )
+        insert_member = sql.SQL("""
+            INSERT INTO {table} (username, display_name, phone, city, date_of_birth, admission_year) 
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """).format(table=sql.Identifier(table_name))
         with self.connect() as conn:
             with conn.cursor() as cur:
-                cur.execute(insert_member, (username, display_name))
+                cur.execute(insert_member, (username, display_name, phone, city, date_of_birth, admission_year))
                 conn.commit()
 
     def get_group_members(self, group_name):
         if not self.group_exists(group_name):
             return []
         table_name = "group_" + group_name
-        query = sql.SQL("SELECT id, username, display_name FROM {table} ORDER BY id;").format(
-            table=sql.Identifier(table_name)
-        )
+        query = sql.SQL("""
+            SELECT id, username, display_name, phone, city, date_of_birth, admission_year 
+            FROM {table} 
+            ORDER BY display_name ASC;
+        """).format(table=sql.Identifier(table_name))
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(query)
@@ -113,38 +130,105 @@ class DBHandler:
                 cur.execute("SELECT group_name FROM groups_list ORDER BY group_name;")
                 return [row[0] for row in cur.fetchall()]
 
-    def add_student(self, name, group):
+    def add_student(self, name, group, phone=None, city=None, date_of_birth=None, admission_year=None):
         """
         Добавляет студента в указанную группу.
         """
         table_name = "group_" + group
-        insert_student = sql.SQL("INSERT INTO {table} (username, display_name) VALUES (%s, %s) RETURNING id;").format(
-            table=sql.Identifier(table_name)
-        )
+        insert_student = sql.SQL("""
+            INSERT INTO {table} (username, display_name, phone, city, date_of_birth, admission_year) 
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
+        """).format(table=sql.Identifier(table_name))
         display_name = name  # В данном случае display_name = name, можно изменить по необходимости
         with self.connect() as conn:
             with conn.cursor() as cur:
-                cur.execute(insert_student, (name, display_name))
+                cur.execute(insert_student, (name, display_name, phone, city, date_of_birth, admission_year))
                 new_id = cur.fetchone()[0]
                 conn.commit()
                 return new_id
 
-    def get_student_by_id(self, student_id):
+    def get_student_by_id(self, student_id, group_name=None):
         """
-        Получает студента по ID. Предполагается, что ID уникален по всем группам.
+        Получает студента по ID. Если group_name указан, ищет только в этой группе.
+        Если group_name не указан, перебирает все группы.
         """
-        # Нужно перебрать все группы и найти студента с данным ID
         with self.connect() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT group_name FROM groups_list;")
-                groups = [row[0] for row in cur.fetchall()]
-                for group in groups:
-                    table_name = "group_" + group
-                    query = sql.SQL("SELECT id, username, display_name, %s FROM {table} WHERE id = %s;").format(
-                        table=sql.Identifier(table_name)
-                    )
-                    cur.execute(query, (group, student_id))
-                    student = cur.fetchone()
-                    if student:
-                        return student  # (id, username, display_name, group_name)
+                if group_name:
+                    table_name = "group_" + group_name
+                    query = sql.SQL("""
+                        SELECT id, username, display_name, phone, city, date_of_birth, admission_year 
+                        FROM {table} 
+                        WHERE id = %s;
+                    """).format(table=sql.Identifier(table_name))
+                    cur.execute(query, (student_id,))
+                    return cur.fetchone()
+                else:
+                    cur.execute("SELECT group_name FROM groups_list;")
+                    groups = [row[0] for row in cur.fetchall()]
+                    for group in groups:
+                        table_name = "group_" + group
+                        query = sql.SQL("""
+                            SELECT id, username, display_name, phone, city, date_of_birth, admission_year 
+                            FROM {table} 
+                            WHERE id = %s;
+                        """).format(table=sql.Identifier(table_name))
+                        cur.execute(query, (student_id,))
+                        student = cur.fetchone()
+                        if student:
+                            return student  # (id, username, display_name, phone, city, date_of_birth, admission_year)
         return None
+
+    def update_user_profile(self, user_id, display_name, email=None, phone=None, city=None, date_of_birth=None, admission_year=None, new_password_hash=None):
+        """
+        Обновляет профиль пользователя.
+        """
+        fields = ["display_name = %s"]
+        values = [display_name]
+
+        if email is not None:
+            fields.append("email = %s")
+            values.append(email)
+        
+        if phone is not None:
+            fields.append("phone = %s")
+            values.append(phone)
+        
+        if city is not None:
+            fields.append("city = %s")
+            values.append(city)
+        
+        if date_of_birth is not None:
+            fields.append("date_of_birth = %s")
+            values.append(date_of_birth)
+        
+        if admission_year is not None:
+            fields.append("admission_year = %s")
+            values.append(admission_year)
+
+        if new_password_hash is not None:
+            fields.append("password_hash = %s")
+            values.append(new_password_hash)
+
+        values.append(user_id)
+
+        query = f"UPDATE users SET {', '.join(fields)} WHERE id = %s;"
+
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, tuple(values))
+                conn.commit()
+
+    def get_user_by_id(self, user_id):
+        """
+        Получает пользователя по ID.
+        """
+        query = """
+            SELECT id, username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year, date_joined 
+            FROM users 
+            WHERE id = %s;
+        """
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, (user_id,))
+                return cur.fetchone()

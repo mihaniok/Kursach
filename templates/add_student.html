@@ -4,55 +4,55 @@
 
 {% block content %}
 <h2>Добавить студента</h2>
-<form id="addStudentForm">
+<form id="addStudentForm" method="POST">
     {{ form.hidden_tag() }}
     <p>
         {{ form.name.label }}<br>
-        <input type="text" name="name" id="name" required>
+        {{ form.name(size=32) }}
     </p>
     <p>
         {{ form.group.label }}<br>
-        <input type="text" name="group" id="group" required>
+        {{ form.group(size=32) }}
     </p>
-    <p><button type="submit">Добавить</button></p>
+    <p>{{ form.submit() }}</p>
 </form>
 
 <div id="addStudentResult"></div>
 
 <script>
-    // Обработчик формы добавления студента через AJAX
-    document.getElementById('addStudentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+// Обработчик формы добавления студента через AJAX
+document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-        const name = document.getElementById('name').value.trim();
-        const group = document.getElementById('group').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const group = document.getElementById('group').value.trim();
 
-        if (!name || !group) {
-            alert("Пожалуйста, заполните все поля.");
-            return;
+    if (!name || !group) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+    }
+
+    fetch('{{ url_for("add_student") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ form.csrf_token._value() }}'  // Используем CSRF токен из формы
+        },
+        body: JSON.stringify({ name: name, group: group })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('addStudentResult');
+        if (data.success) {
+            resultDiv.innerHTML = `<p>Студент добавлен с ID ${data.id}</p>`;
+            document.getElementById('addStudentForm').reset();
+        } else {
+            resultDiv.innerHTML = `<p>${data.message}</p>`;
         }
-
-        fetch('{{ url_for("add_student") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ form.csrf_token.data }}'
-            },
-            body: JSON.stringify({ name: name, group: group })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const resultDiv = document.getElementById('addStudentResult');
-            if (data.success) {
-                resultDiv.innerHTML = `<p>Студент добавлен с ID ${data.id}</p>`;
-                document.getElementById('addStudentForm').reset();
-            } else {
-                resultDiv.innerHTML = `<p>${data.message}</p>`;
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-        });
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
     });
+});
 </script>
 {% endblock %}

@@ -4,11 +4,11 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf import CSRFProtect
 from db_handler import DBHandler
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import RegistrationForm, LoginForm  # Импортируем формы
+from forms import RegistrationForm, LoginForm, ProfileForm
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Замените на ваш уникальный секретный ключ
+app.secret_key = os.getenv('SECRET_KEY', 'your_default_secret_key')  # Замените на ваш уникальный секретный ключ
 csrf = CSRFProtect(app)  # Включение защиты от CSRF
 
 # Настройки подключения к базе данных
@@ -28,7 +28,7 @@ def login_required(f):
     from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'username' not in session:
+        if 'user_id' not in session:
             flash("Пожалуйста, войдите в систему.")
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -37,7 +37,7 @@ def login_required(f):
 @app.route('/')
 def home():
     """Главная страница: перенаправление на регистрацию или на страницу группы."""
-    if 'username' not in session:
+    if 'user_id' not in session:
         return redirect(url_for('register'))
     else:
         return redirect(url_for('my_group'))
@@ -51,6 +51,11 @@ def register():
         password = form.password.data.strip()
         display_name = form.display_name.data.strip()
         group_name = form.group_name.data.strip()
+        email = form.email.data.strip() if form.email.data else None
+        phone = form.phone.data.strip() if form.phone.data else None
+        city = form.city.data.strip() if form.city.data else None
+        date_of_birth = form.date_of_birth.data
+        admission_year = form.admission_year.data
 
         # Проверка существования пользователя
         if db.user_exists(username):
@@ -65,13 +70,13 @@ def register():
             db.create_group(group_name)
 
         # Создание пользователя
-        db.create_user(username, password_hash, display_name, group_name)
+        user_id = db.create_user(username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year)
 
         # Добавление пользователя в группу
-        db.add_user_to_group(username, display_name, group_name)
+        db.add_user_to_group(username, display_name, group_name, phone, city, date_of_birth, admission_year)
 
         # Логиним пользователя
-        session['username'] = username
+        session['user_id'] = user_id
         flash("Регистрация прошла успешно!")
         return redirect(url_for('my_group'))
     return render_template('register.html', form=form)
@@ -90,11 +95,11 @@ def login():
             flash("Пользователь не найден.")
             return redirect(url_for('login'))
 
-        user_id, u_name, password_hash, display_name, group_name = user
+        user_id, u_name, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year, date_joined = user
 
         # Проверка пароля
         if check_password_hash(password_hash, password):
-            session['username'] = u_name
+            session['user_id'] = user_id
             flash("Вы успешно вошли.")
             return redirect(url_for('my_group'))
         else:
@@ -106,7 +111,7 @@ def login():
 @login_required
 def logout():
     """Маршрут для выхода пользователя."""
-    session.pop('username', None)
+    session.pop('user_id', None)
     flash("Вы вышли из системы.")
     return redirect(url_for('login'))
 
@@ -114,9 +119,9 @@ def logout():
 @login_required
 def my_group():
     """Маршрут для отображения группы текущего пользователя."""
-    user = db.get_user(session['username'])
+    user = db.get_user_by_id(session['user_id'])
     if user:
-        user_id, username, password_hash, display_name, group_name = user
+        user_id, username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year, date_joined = user
         members = db.get_group_members(group_name)
         return render_template('my_group.html', group_name=group_name, members=members)
     else:
@@ -156,7 +161,7 @@ def view_group(group_name):
         members = db.get_group_members(group_name)
         if not members and not db.group_exists(group_name):
             return jsonify({"success": False, "message": "Такой группы не существует."}), 404
-        members_list = [{"id": m[0], "username": m[1], "display_name": m[2]} for m in members]
+        members_list = [{"id": m[0], "username": m[1], "display_name": m[2], "phone": m[3], "city": m[4], "date_of_birth": m[5], "admission_year": m[6]} for m in members]
         return jsonify({"success": True, "group_name": group_name, "members": members_list})
     else:
         members = db.get_group_members(group_name)
@@ -164,55 +169,6 @@ def view_group(group_name):
             flash("Такой группы не существует.")
             return redirect(url_for('groups'))
         return render_template('view_group.html', group_name=group_name, members=members)
-
-@app.route('/add', methods=['GET', 'POST'])
-@login_required
-def add_student():
-    """
-    Маршрут для добавления нового студента.
-    - Если запрос POST с JSON, обрабатывает через AJAX и возвращает JSON.
-    - В противном случае, обрабатывает стандартную форму и перенаправляет.
-    """
-    if request.method == 'POST':
-        if request.is_json:
-            data = request.get_json()
-            name = data.get('name', '').strip()
-            group = data.get('group', '').strip()
-
-            if not name or not group:
-                return jsonify({"success": False, "message": "Заполните все поля."}), 400
-
-            try:
-                # Проверка существования группы и создание, если необходимо
-                if not db.group_exists(group):
-                    db.create_group(group)
-
-                # Добавление студента
-                new_id = db.add_student(name, group)
-                return jsonify({"success": True, "id": new_id}), 201
-            except Exception as e:
-                return jsonify({"success": False, "message": str(e)}), 500
-        else:
-            # Обработка стандартной формы
-            name = request.form.get('name').strip()
-            group = request.form.get('group').strip()
-
-            if not name or not group:
-                flash("Заполните все поля.")
-                return redirect(url_for('add_student'))
-
-            try:
-                if not db.group_exists(group):
-                    db.create_group(group)
-
-                new_id = db.add_student(name, group)
-                flash(f"Студент добавлен с ID {new_id}")
-                return redirect(url_for('my_group'))
-            except Exception as e:
-                flash(f"Ошибка: {e}")
-                return redirect(url_for('add_student'))
-
-    return render_template('add_student.html')
 
 @app.route('/student/<int:student_id>', methods=['GET'])
 @login_required
@@ -229,7 +185,10 @@ def student_details(student_id):
                 "id": student[0],
                 "username": student[1],
                 "display_name": student[2],
-                "group_name": student[3]
+                "phone": student[3],
+                "city": student[4],
+                "date_of_birth": student[5].strftime('%Y-%m-%d') if student[5] else None,
+                "admission_year": student[6]
             }
             return jsonify({"success": True, "student": student_dict})
         else:
@@ -239,6 +198,67 @@ def student_details(student_id):
             flash("Студент не найден.")
             return redirect(url_for('my_group'))
         return render_template('student_details.html', student=student)
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    """Маршрут для просмотра и редактирования личного кабинета пользователя."""
+    user = db.get_user_by_id(session['user_id'])
+    if not user:
+        flash("Пользователь не найден.")
+        return redirect(url_for('logout'))
+
+    user_id, username, password_hash, display_name, group_name, email, phone, city, date_of_birth, admission_year, date_joined = user
+
+    form = ProfileForm(obj={
+        'display_name': display_name,
+        'email': email,
+        'phone': phone,
+        'city': city,
+        'date_of_birth': date_of_birth,
+        'admission_year': admission_year
+    })
+
+    if form.validate_on_submit():
+        new_display_name = form.display_name.data.strip()
+        new_email = form.email.data.strip() if form.email.data else None
+        new_phone = form.phone.data.strip() if form.phone.data else None
+        new_city = form.city.data.strip() if form.city.data else None
+        new_date_of_birth = form.date_of_birth.data
+        new_admission_year = form.admission_year.data
+        current_password = form.current_password.data.strip()
+        new_password = form.new_password.data.strip() if form.new_password.data else None
+
+        # Проверка текущего пароля, если пользователь хочет изменить пароль
+        if new_password:
+            if not current_password:
+                flash("Для изменения пароля необходимо ввести текущий пароль.")
+                return redirect(url_for('profile'))
+
+            if not check_password_hash(password_hash, current_password):
+                flash("Текущий пароль неверен.")
+                return redirect(url_for('profile'))
+
+            new_password_hash = generate_password_hash(new_password)
+        else:
+            new_password_hash = None
+
+        # Обновление профиля
+        db.update_user_profile(
+            user_id=user_id,
+            display_name=new_display_name,
+            email=new_email,
+            phone=new_phone,
+            city=new_city,
+            date_of_birth=new_date_of_birth,
+            admission_year=new_admission_year,
+            new_password_hash=new_password_hash
+        )
+
+        flash("Профиль успешно обновлён.")
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html', form=form, username=username, group_name=group_name, date_joined=date_joined)
 
 if __name__ == '__main__':
     app.run(debug=True)

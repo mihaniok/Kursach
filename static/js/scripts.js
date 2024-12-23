@@ -1,6 +1,6 @@
 // static/js/scripts.js
 
-// Пример общей функции для получения CSRF токена из cookies
+// Функция для получения CSRF токена из cookies (если необходимо)
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

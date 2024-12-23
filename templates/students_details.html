@@ -3,7 +3,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Студент: {{ student[1] }}</h2>
-<p><strong>ID:</strong> {{ student[0] }}</p>
-<p><strong>Группа:</strong> {{ student[3] }}</p>
+<div class="student-details-container">
+    <h2>Детали студента</h2>
+    <div class="details">
+        <p><strong>ID:</strong> {{ student[0] }}</p>
+        <p><strong>Имя:</strong> {{ student[2] }}</p>
+        <p><strong>Номер телефона:</strong> {{ student[3] if student[3] else 'Не указано' }}</p>
+        <p><strong>Город:</strong> {{ student[4] if student[4] else 'Не указано' }}</p>
+        <p><strong>Дата рождения:</strong> {{ student[5].strftime('%Y-%m-%d') if student[5] else 'Не указано' }}</p>
+        <p><strong>Год поступления:</strong> {{ student[6] if student[6] else 'Не указано' }}</p>
+    </div>
+    <a href="{{ url_for('my_group') }}" class="back-button">Вернуться к группе</a>
+</div>
 {% endblock %}

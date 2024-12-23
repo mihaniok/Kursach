@@ -8,34 +8,45 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- Подключение JavaScript -->
     <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
+    <!-- Подключение Google Fonts для современного дизайна -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
 </head>
 <body>
 <header>
     <nav>
-        {% if session.username %}
-            <a href="{{ url_for('my_group') }}">Моя группа</a>
-            <a href="{{ url_for('groups') }}">Другие группы</a>
-            <a href="{{ url_for('add_student') }}">Добавить студента</a>
-            <a href="{{ url_for('logout') }}">Выход ({{ session.username }})</a>
-        {% else %}
-            <a href="{{ url_for('register') }}">Регистрация</a>
-            <a href="{{ url_for('login') }}">Вход</a>
-        {% endif %}
+        <div class="logo">
+            <a href="{{ url_for('home') }}">Управление Студентами</a>
+        </div>
+        <div class="nav-links">
+            {% if session.user_id %}
+                <a href="{{ url_for('my_group') }}">Моя группа</a>
+                <a href="{{ url_for('groups') }}">Другие группы</a>
+                <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                <a href="{{ url_for('logout') }}">Выход</a>
+            {% else %}
+                <a href="{{ url_for('register') }}">Регистрация</a>
+                <a href="{{ url_for('login') }}">Вход</a>
+            {% endif %}
+        </div>
     </nav>
 </header>
 
 {% with messages = get_flashed_messages() %}
   {% if messages %}
-    <ul class="flash-messages">
+    <div class="flash-container">
       {% for message in messages %}
-        <li>{{ message }}</li>
+        <div class="flash-message">{{ message }}</div>
       {% endfor %}
-    </ul>
+    </div>
   {% endif %}
 {% endwith %}
 
 <main>
     {% block content %}{% endblock %}
 </main>
+
+<footer>
+    <p>&copy; 2024 Система управления студентами</p>
+</footer>
 </body>
 </html>
