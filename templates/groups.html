@@ -5,9 +5,40 @@
 {% block content %}
 <div class="groups-container">
     <h2>Все группы</h2>
-    <button id="loadGroups" class="btn">Загрузить группы</button>
     <ul id="groupsList" class="groups-list">
-        <!-- Список групп будет загружаться здесь -->
+        <!-- Список групп будет загружаться здесь автоматически -->
     </ul>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('{{ url_for("groups") }}', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const groupsList = document.getElementById('groupsList');
+        groupsList.innerHTML = ''; // Очистка списка
+
+        if (data.success && data.groups.length > 0) {
+            data.groups.forEach(group => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `/group/${group}`;
+                a.textContent = group;
+                li.appendChild(a);
+                groupsList.appendChild(li);
+            });
+        } else {
+            groupsList.innerHTML = '<li>Групп пока нет.</li>';
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+</script>
 {% endblock %}

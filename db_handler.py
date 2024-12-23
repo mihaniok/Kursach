@@ -179,6 +179,41 @@ class DBHandler:
                             return student  # (id, username, display_name, phone, city, date_of_birth, admission_year)
         return None
 
+    def get_group_name_by_username(self, username):
+        query = "SELECT group_name FROM users WHERE username = %s;"
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, (username,))
+                result = cur.fetchone()
+                if result:
+                    return result[0]
+                else:
+                    return None
+
+    def update_student_in_group(self, student_id, display_name, phone=None, city=None, date_of_birth=None, admission_year=None, group_name=None):
+        """
+        Обновляет данные студента в таблице группы.
+        """
+        if not group_name:
+            return False
+        
+        table_name = "group_" + group_name
+        update_query = sql.SQL("""
+            UPDATE {table}
+            SET display_name = %s,
+                phone = %s,
+                city = %s,
+                date_of_birth = %s,
+                admission_year = %s
+            WHERE id = %s;
+        """).format(table=sql.Identifier(table_name))
+        
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(update_query, (display_name, phone, city, date_of_birth, admission_year, student_id))
+                conn.commit()
+                return True
+        
     def update_user_profile(self, user_id, display_name, email=None, phone=None, city=None, date_of_birth=None, admission_year=None, new_password_hash=None):
         """
         Обновляет профиль пользователя.
@@ -232,3 +267,5 @@ class DBHandler:
             with conn.cursor() as cur:
                 cur.execute(query, (user_id,))
                 return cur.fetchone()
+    
+    

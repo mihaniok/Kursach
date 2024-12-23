@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf import CSRFProtect
 from db_handler import DBHandler
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import RegistrationForm, LoginForm, ProfileForm
+from forms import RegistrationForm, LoginForm, ProfileForm, UpdateStudentForm
 import os
 
 app = Flask(__name__)
@@ -80,6 +80,58 @@ def register():
         flash("Регистрация прошла успешно!")
         return redirect(url_for('my_group'))
     return render_template('register.html', form=form)
+
+@app.route('/student/<int:student_id>/update', methods=['GET', 'POST'])
+@login_required
+def update_student(student_id):
+    """Маршрут для обновления данных студента."""
+    # Получение информации о студенте
+    student = db.get_student_by_id(student_id)
+    if not student:
+        flash("Студент не найден.")
+        return redirect(url_for('my_group'))
+    
+    # Получение group_name из таблицы 'users'
+    username = student[1]  # Предполагается, что student[1] - это username
+    group_name = db.get_group_name_by_username(username)
+    if not group_name:
+        flash("Группа студента не найдена.")
+        return redirect(url_for('my_group'))
+    
+    form = UpdateStudentForm(obj={
+        'display_name': student[2],
+        'phone': student[3],
+        'city': student[4],
+        'date_of_birth': student[5],
+        'admission_year': student[6]
+    })
+    
+    if form.validate_on_submit():
+        new_display_name = form.display_name.data.strip()
+        new_phone = form.phone.data.strip() if form.phone.data else None
+        new_city = form.city.data.strip() if form.city.data else None
+        new_date_of_birth = form.date_of_birth.data
+        new_admission_year = form.admission_year.data
+        
+        # Обновление данных студента
+        success = db.update_student_in_group(
+            student_id=student_id,
+            display_name=new_display_name,
+            phone=new_phone,
+            city=new_city,
+            date_of_birth=new_date_of_birth,
+            admission_year=new_admission_year,
+            group_name=group_name
+        )
+        
+        if success:
+            flash("Данные студента успешно обновлены.")
+            return redirect(url_for('student_details', student_id=student_id))
+        else:
+            flash("Произошла ошибка при обновлении данных студента.")
+            return redirect(url_for('update_student', student_id=student_id))
+    
+    return render_template('update_student.html', form=form, student=student)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
