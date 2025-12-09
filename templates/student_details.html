@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-
-{% block content %}
-<h2>Студент: {{ student[1] }}</h2>
-<p><strong>ID:</strong> {{ student[0] }}</p>
-<p><strong>Группа:</strong> {{ student[2] }}</p>
-<p><a href="{{ url_for('update_student', student_id=student[0]) }}">Обновить</a></p>
-{% endblock %}
