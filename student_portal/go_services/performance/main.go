@@ -89,19 +89,16 @@ type DatabaseConfig struct {
 }
 
 func getDBConfig() DatabaseConfig {
-    // Загружаем .env файл (уже делается в main())
-    // Просто читаем переменные окружения
     
     return DatabaseConfig{
         Host:     mustGetEnv("DB_HOST"),
         Port:     mustGetEnv("DB_PORT"),
         User:     mustGetEnv("DB_USER"),
-        Password: mustGetSecret("DB_PASSWORD"), // Специальная функция для пароля
+        Password: mustGetSecret("DB_PASSWORD"),
         DBName:   mustGetEnv("DB_NAME"),
     }
 }
 
-// Обязательная переменная - падает если не найдена
 func mustGetEnv(key string) string {
     value := os.Getenv(key)
     if value == "" {
@@ -150,6 +147,7 @@ func calculatePerformance(studentID int, semester *int) (PerformanceResponse, er
     if len(grades) == 0 {
         return PerformanceResponse{
             Success: true,
+			
             AvgGrade: 0,
             Semesters: make(map[int]map[string]SubjectData),
         }, nil
