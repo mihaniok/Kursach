@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="group-container">
+    <div class="group-header">
+        <div class="group-info">
+            <h2><i class="fas fa-users"></i> {{ group.name }}</h2>
+            <p class="text-muted">Всего студентов: {{ total_members }}</p>
+        </div>
+        <div class="group-actions">
+            <button class="btn btn-outline-primary" onclick="printGroup()">
+                <i class="fas fa-print"></i> Печать
+            </button>
+            <button class="btn btn-outline-success" onclick="exportToExcel()">
+                <i class="fas fa-file-export"></i> Экспорт
+            </button>
+        </div>
+    </div>
+
+    <div class="group-members-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="groupTable">
+                <thead class="table-light">
+                    <tr>
+                        <th width="50px">#</th>
+                        <th>Студент</th>
+                        <th>Электронная почта</th>
+                        <th class="text-center">Телефон</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="student-info">
+                                <div class="student-name">
+                                    <strong>{{ member.last_name }} {{ member.first_name }} {{ member.middle_name }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div><i class="fas fa-envelope"></i> {{ member.email }}</div>
+                        </td>
+                        <td class="text-center">
+                            {% if member.phone_number %}
+                            <div><i class="fas fa-phone"></i> {{ member.phone_number }}</div>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функция для печати
+function printGroup() {
+    // Создаем содержимое для печати
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Группа {{ group.name }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h2 { color: #333; margin-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f8f9fa; font-weight: bold; }
+                tr:nth-child(even) { background-color: #f2f2f2; }
+                .header { margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>Группа: {{ group.name }}</h2>
+                <p><strong>Всего студентов:</strong> {{ total_members }}</p>
+                <p><strong>Дата печати:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>ФИО</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ member.last_name }} {{ member.first_name }} {{ member.middle_name }}</td>
+                        <td>{{ member.email }}</td>
+                        <td>{{ member.phone_number|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `;
+    
+    // Открываем новое окно для печати
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Даем время на загрузку и затем печатаем
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.onafterprint = function() {
+            printWindow.close();
+        };
+    }, 250);
+}
+
+// Функция для экспорта в Excel
+function exportToExcel() {
+    // Создаем CSV содержимое
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+    
+    // Заголовки
+    csvContent += "№,Фамилия,Имя,Отчество,Email,Телефон\n";
+    
+    // Данные студентов
+    {% for member in members %}
+    csvContent += `{{ forloop.counter }},"{{ member.last_name }}","{{ member.first_name }}","{{ member.middle_name }}","{{ member.email }}","{{ member.phone_number|default:"" }}"\n`;
+    {% endfor %}
+    
+    // Создаем ссылку для скачивания
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Группа_{{ group.name }}_" + new Date().toISOString().split('T')[0] + ".csv");
+    document.body.appendChild(link);
+    
+    // Запускаем скачивание
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    {{ group_subject.subject.name }} - {{ group_subject.group.name }}
+                    <span class="badge bg-light text-dark ms-2">{{ group_subject.semester }} семестр</span>
+                </h4>
+                <a href="{% url 'teacher-grades' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left"></i> Назад к списку предметов
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if messages %}
+            <div class="mb-3">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">№</th>
+                                <th width="35%">Студент</th>
+                                <th width="20%">Текущая оценка</th>
+                                <th width="20%">Новая оценка</th>
+                                <th width="20%">Дата выставления</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in students_with_grades %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ item.student.last_name }} {{ item.student.first_name }} {{ item.student.middle_name }}</strong>
+                                </td>
+                                <td>
+                                    {% if item.grade %}
+                                        <span class="badge 
+                                            {% if item.grade.grade == 5 %}bg-success
+                                            {% elif item.grade.grade == 4 %}bg-info
+                                            {% elif item.grade.grade == 3 %}bg-warning
+                                            {% else %}bg-danger{% endif %} fs-6">
+                                            {{ item.grade.grade }}
+                                        </span>
+                                        <small class="text-muted d-block">
+                                            {{ item.grade.date|date:"d.m.Y" }}
+                                        </small>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Нет оценки</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select name="grade_{{ item.student.id }}" 
+                                            class="form-select form-select-sm border-primary shadow-sm" required>
+                                        <option value="">— Выберите оценку —</option>
+                                        <option value="5" {% if item.grade and item.grade.grade == 5 %}selected{% endif %}>5 - Отлично</option>
+                                        <option value="4" {% if item.grade and item.grade.grade == 4 %}selected{% endif %}>4 - Хорошо</option>
+                                        <option value="3" {% if item.grade and item.grade.grade == 3 %}selected{% endif %}>3 - Удовлетворительно</option>
+                                        <option value="2" {% if item.grade and item.grade.grade == 2 %}selected{% endif %}>2 - Неудовлетворительно</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="date" name="date_{{ item.student.id }}" 
+                                           class="form-control form-control-sm"
+                                           value="{% if item.grade %}{{ item.grade.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                                           required>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-users-slash fa-2x mb-2"></i><br>
+                                    Нет студентов в этой группе
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if students_with_grades %}
+                <div class="mt-4 border-top pt-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Всего студентов: {{ students_with_grades|length }}</span>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-success px-3">
+                                <i class="fas fa-save me-1"></i> Сохранить все оценки
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 1em;
+        padding: 0.5em 0.8em;
+        min-width: 40px;
+    }
+    .bg-success { background-color: #198754 !important; }
+    .bg-info { background-color: #0dcaf0 !important; }
+    .bg-warning { background-color: #ffc107 !important; color: #000 !important; }
+    .bg-danger { background-color: #dc3545 !important; }
+    .bg-secondary { background-color: #6c757d !important; }
+    
+    .form-control-sm {
+        height: 38px;
+        font-size: 0.9rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 12px 8px;
+    }
+    
+    .alert {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

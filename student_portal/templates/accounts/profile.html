@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Боковая панель с аватаром -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center p-4">
+                    <div class="avatar-container mb-3">
+                        <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default_avatar.png' %}{% endif %}" 
+                            class="img-fluid rounded-circle avatar-img"
+                            style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #f8f9fa;">
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">{{ user.get_full_name }}</h4>
+                    <p class="text-muted mb-3">Студент</p>
+                    
+                    <div class="student-info">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">
+                            <i class="fas fa-users me-1"></i>
+                            {{ user.group.name|default:"Группа не указана" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Основная информация -->
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0 fw-bold"><i class="fas fa-user-edit me-2"></i>Редактирование профиля</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Личная информация -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark mb-3 pb-2 border-bottom">
+                                <i class="fas fa-user-circle me-2"></i>Личная информация
+                            </h5>
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold d-block">Фамилия*</label>
+                                    {{ form.last_name }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold d-block">Имя*</label>
+                                    {{ form.first_name }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold d-block">Отчество</label>
+                                    {{ form.middle_name }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Контактные данные -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark mb-3 pb-2 border-bottom">
+                                <i class="fas fa-phone-alt me-2"></i>Контактные данные
+                            </h5>
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold d-block">Email*</label>
+                                    {{ form.email }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold d-block">Телефон*</label>
+                                    {{ form.phone_number }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Учебная информация -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark mb-3 pb-2 border-bottom">
+                                <i class="fas fa-graduation-cap me-2"></i>Учебная информация
+                            </h5>
+                            <div class="row mb-4 justify-content-center">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold d-block text-center">Группа</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-users"></i></span>
+                                        <input type="text" class="form-control" 
+                                               value="{{ user.group.name|default:'Не указана' }}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Загрузка аватара -->
+                        <div class="mb-4">
+                            <h5 class="fw-semibold text-dark mb-3 pb-2 border-bottom">
+                                <i class="fas fa-camera me-2"></i>Фотография профиля
+                            </h5>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Загрузить новое фото</label>
+                                <input type="file" name="avatar" class="form-control" accept="image/*">
+                                <small class="form-text text-muted">JPG, PNG до 5MB</small>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка сохранения -->
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary px-5 py-2 fw-semibold" style="min-width: 200px;">
+                                <i class="fas fa-save me-2"></i>Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-container {
+    position: relative;
+}
+
+.avatar-img {
+    transition: transform 0.3s ease;
+}
+
+.avatar-img:hover {
+    transform: scale(1.05);
+}
+
+.card {
+    border-radius: 12px;
+    background-color: #ffffff;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    border: none;
+    background-color: #007bff !important;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.input-group-text {
+    border-radius: 8px 0 0 8px !important;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    display: block !important;
+}
+
+h5 {
+    color: #2c3e50 !important;
+    font-weight: 600 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.border-bottom {
+    border-color: #e9ecef !important;
+}
+
+.mb-4 {
+    margin-bottom: 2rem !important;
+}
+
+.pb-2 {
+    padding-bottom: 0.75rem !important;
+}
+
+/* Фиксированная высота для контейнеров полей */
+.col-md-4, .col-md-6 {
+    min-height: 90px;
+}
+
+.justify-content-center {
+    justify-content: center !important;
+}
+</style>
+{% endblock %}

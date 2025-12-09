@@ -1,0 +1,5 @@
+Django>=5.2,<6.0
+psycopg2-binary
+dj-database-url
+Pillow
+requests==2.31.0

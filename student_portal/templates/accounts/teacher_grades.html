@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Выставление оценок</h4>
+                
+            </div>
+        </div>
+        <div class="card-body">
+            <h5>Выберите предмет для выставления оценок</h5>
+            <p class="text-muted mb-4">Нажмите на предмет для выставления или изменения оценок</p>
+            
+            {% if teaching_subjects %}
+            <div class="row">
+                {% for subject in teaching_subjects %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ subject.subject.name }}</h5>
+                            <div class="mb-3">
+                                <span class="badge bg-primary">Группа: {{ subject.group.name }}</span>
+                                <span class="badge bg-secondary ms-1">Семестр: {{ subject.semester }}</span>
+                            </div>
+                            <div class="text-muted mb-3">
+                                <small>
+                                    <i class="fas fa-chalkboard-teacher me-1"></i>
+                                    {% if subject.teacher %}
+                                        {{ subject.teacher }}
+                                    {% else %}
+                                        Вы преподаватель
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <a href="{% url 'teacher-grades-edit' subject.id %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-edit me-1"></i> Выставить оценки
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Нет назначенных предметов</h4>
+                <p class="text-muted">Вам не назначены предметы для преподавания.</p>
+                <p class="text-muted">Обратитесь к администратору для назначения предметов.</p>
+                
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .badge {
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

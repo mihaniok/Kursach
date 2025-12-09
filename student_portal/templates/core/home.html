@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="background-color: #ffffff;">
+    {% if user.is_teacher %}
+    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+        <strong>Вы вошли как преподаватель!</strong>
+        <a href="{% url 'teacher-dashboard' %}" class="alert-link">Перейти в панель преподавателя</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <!-- Заголовок -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="mb-4 py-4" style="background-color: #ffffff;">
+                <h1 class="display-5 fw-bold gradient-success mb-3">Добро пожаловать, {{ user.get_full_name }}!</h1>
+                <p class="lead text-dark opacity-75">Ваш персональный образовательный портал</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Карточки модулей -->
+    <div class="row g-4 justify-content-center">
+        <!-- Профиль -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 shadow-hover border-0" style="background-color: #0d6efd;">
+                <div class="card-header bg-gradient-primary text-white text-center py-3">
+                    <i class="fas fa-user-circle fa-2x mb-2"></i>
+                    <h5 class="card-title mb-0 fw-bold">Мой профиль</h5>
+                </div>
+                <div class="card-body text-center d-flex flex-column" style="background-color: #ffffff;">
+                    <p class="card-text text-dark mb-3">Управление личными данными и настройками</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'profile' %}" class="btn btn-primary px-4">
+                            <i class="fas fa-arrow-right me-2"></i>Перейти
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Группа -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 shadow-hover border-0" style="background-color: #198754;">
+                <div class="card-header bg-gradient-success text-white text-center py-3">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h5 class="card-title mb-0 fw-bold">Моя группа</h5>
+                </div>
+                <div class="card-body text-center d-flex flex-column" style="background-color: #ffffff;">
+                    <p class="card-text text-dark mb-3">Состав группы и контактная информация</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'my-group' %}" class="btn btn-success px-4">
+                            <i class="fas fa-arrow-right me-2"></i>Перейти
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Успеваемость -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 shadow-hover border-0" style="background-color: #0dcaf0;">
+                <div class="card-header bg-gradient-info text-white text-center py-3">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h5 class="card-title mb-0 fw-bold">Успеваемость</h5>
+                </div>
+                <div class="card-body text-center d-flex flex-column" style="background-color: #ffffff;">
+                    {% if user.avg_grade %}
+                    <div class="display-6 fw-bold text-dark mb-2">{{ user.avg_grade }}</div>
+                    <p class="card-text text-dark opacity-75 small">Средний балл</p>
+                    {% else %}
+                    <div class="text-dark opacity-75 mb-3">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                        <p class="small mt-2">Нет данных</p>
+                    </div>
+                    {% endif %}
+                    <div class="mt-auto">
+                        <a href="{% url 'performance' %}" class="btn btn-info text-white px-4">
+                            <i class="fas fa-list me-2"></i>Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материалы -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 shadow-hover border-0" style="background-color: #ffc107;">
+                <div class="card-header bg-gradient-warning text-white text-center py-3">
+                    <i class="fas fa-book-open fa-2x mb-2"></i>
+                    <h5 class="card-title mb-0 fw-bold">Учебные материалы</h5>
+                </div>
+                <div class="card-body text-center d-flex flex-column" style="background-color: #ffffff;">
+                    <p class="card-text text-dark mb-3">Доступные материалы для вашей группы</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'study-materials' %}" class="btn btn-warning text-white px-4">
+                            <i class="fas fa-arrow-right me-2"></i>Перейти
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background-color: #ffffff !important;
+}
+
+.container {
+    background-color: #ffffff !important;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+.card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background-color: #ffffff !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+}
+
+.card-body {
+    background-color: #ffffff !important;
+}
+
+.shadow-hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-text {
+    font-weight: 500;
+    color: #212529 !important;
+}
+</style>
+{% endblock %}

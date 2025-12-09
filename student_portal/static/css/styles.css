@@ -1,0 +1,106 @@
+/* Стили для карточек */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+}
+
+/* Центрирование содержимого карточек */
+.card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Фиксированная высота кнопок */
+.card .btn {
+    width: 120px;
+}
+
+/* Отступы между рядами карточек */
+.row {
+    margin-bottom: 1.5rem;
+}
+
+/* Градиентные тексты */
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Анимации карточек */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Стили для страницы успеваемости */
+.grade-table {
+    background-color: white;
+}
+
+.grade-table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 500;
+}
+
+.grade-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Стили для аккордеона материалов */
+.accordion-button:not(.collapsed) {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.accordion-item {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+}
+
+/* Иконки файлов */
+.fa-file-pdf {
+    color: #d93025;
+}
+
+.fa-file-word {
+    color: #2b579a;
+}
+
+.fa-file-alt {
+    color: #6c757d;
+}

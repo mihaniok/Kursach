@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: student_portal_db
+    restart: always
+    environment:
+      POSTGRES_DB: student_portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: student_portal_web
+    depends_on:
+      - db
+    command: >
+      sh -c "
+        echo 'Waiting for Postgres...' &&
+        while ! nc -z db 5432; do sleep 1; done &&
+        echo 'Postgres is up!' &&
+        python manage.py loaddata fixtures/groups.json &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+    - DJANGO_DB_NAME=student_portal
+    - DJANGO_DB_USER=postgres
+    - DJANGO_DB_PASSWORD=root
+    - DJANGO_DB_HOST=db
+    - DJANGO_DB_PORT=5432
+    - DJANGO_SUPERUSER_USERNAME=admin
+    - DJANGO_SUPERUSER_EMAIL=admin@mail.com
+    - DJANGO_SUPERUSER_PASSWORD=admin123
+
+volumes:
+  postgres_data:

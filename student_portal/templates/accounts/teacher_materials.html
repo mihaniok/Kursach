@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-book me-2"></i>Учебные материалы</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label>Название</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label>Описание</label>
+                            {{ form.description }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Предмет</label>
+                                {{ form.subject }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                            
+                                {{ form.file }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Для групп</label>
+                            <div class="border p-3">
+                                {{ form.groups }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload me-1"></i> Загрузить материал
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5>Мои материалы</h5>
+                </div>
+                <div class="card-body">
+                    {% for material in materials %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <h6>{{ material.title }}</h6>
+                        <small class="text-muted">{{ material.subject.name }}</small>
+                        <div class="mt-2">
+                            <a href="{{ material.file.url }}" class="btn btn-sm btn-outline-primary" download>
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <small class="text-muted ms-2">{{ material.upload_date|date:"d.m.Y" }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Нет загруженных материалов</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Статистика преподавателя сверху -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>Панель преподавателя</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h3 class="mb-1">Добро пожаловать, {{ teacher.get_full_name }}!</h3>
+                            
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <!-- Статистика по группам -->
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h2 class="text-primary mb-2">{{ total_groups }}</h2>
+                                    <p class="card-text mb-0">Групп</p>
+                                    <small class="text-muted">под вашим руководством</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Статистика по предметам -->
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h2 class="text-success mb-2">{{ total_subjects }}</h2>
+                                    <p class="card-text mb-0">Предметов</p>
+                                    <small class="text-muted">вы </small>
+                                    <small class="text-muted">преподаете </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Статистика по материалам -->
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h2 class="text-info mb-2">{{ teacher_materials|length }}</h2>
+                                    <p class="card-text mb-0">Материалов</p>
+                                    <small class="text-muted">загружено </small>
+                                    <small class="text-muted">вами </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Статистика по оценкам -->
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h2 class="text-warning mb-2">{{ recent_grades|length }}</h2>
+                                    <p class="card-text mb-0">Оценок</p>
+                                    <small class="text-muted">выставлено недавно</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основные блоки действий -->
+    <div class="row">
+        <!-- Блок выставления оценок -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Выставление оценок</h4>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="flex-grow-1">
+                        <p class="card-text">Выставление оценок по вашим предметам.</p>
+                        
+                        {% if teaching_subjects %}
+                        <div class="mb-3">
+                            <small class="text-muted">Ваши предметы:</small>
+                            <div class="mt-2">
+                                {% for semester, subjects in semesters_data %}
+                                <div class="mb-2">
+                                    <small class="text-muted">{{ semester }} семестр:</small>
+                                    <div class="ms-2">
+                                        {% for subject in subjects %}
+                                        <span class="badge bg-light text-dark me-1 mb-1">{{ subject.subject.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <a href="{% url 'teacher-grades' %}" class="btn btn-success w-100 py-3">
+                            <i class="fas fa-edit fa-lg me-2"></i> Перейти к выставлению оценок
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Блок учебных материалов -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-book me-2"></i>Учебные материалы</h4>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="flex-grow-1">
+                        <p class="card-text">Загрузка и управление учебными материалами для студентов. Поддерживаются PDF, DOCX и TXT файлы.</p>
+                        
+                        
+                        <div class="mb-3">
+                            <small class="text-muted"> </small>
+                            <div class="mt-2">
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <a href="{% url 'teacher-materials' %}" class="btn btn-info text-white w-100 py-3">
+                            <i class="fas fa-upload fa-lg me-2"></i> Перейти к учебным материалам
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        border: none;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .badge {
+        font-size: 0.85em;
+        padding: 0.4em 0.8em;
+    }
+    
+    .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .border-primary { border-color: #0d6efd !important; }
+    .border-success { border-color: #198754 !important; }
+    .border-info { border-color: #0dcaf0 !important; }
+    .border-warning { border-color: #ffc107 !important; }
+</style>
+{% endblock %}

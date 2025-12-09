@@ -1,0 +1,30 @@
+# Используем Python
+FROM python:3.11-slim
+
+# Устанавливаем зависимости для psycopg2 и Pillow + netcat
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаем директорию приложения
+WORKDIR /app
+
+# Копируем requirements
+COPY requirements.txt .
+
+# Устанавливаем зависимости Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем проект
+COPY . .
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Запуск по умолчанию (будет переопределён в docker-compose.yml)
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

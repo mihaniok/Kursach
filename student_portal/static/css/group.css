@@ -1,0 +1,38 @@
+.group-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .group-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .group-actions {
+        margin-top: 15px;
+    }
+    
+    .group-actions .btn {
+        margin-bottom: 5px;
+    }
+}
